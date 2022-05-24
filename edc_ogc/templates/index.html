@@ -40,9 +40,9 @@
   {%- endif %}
   var config = {
     "settings": {
-        "tutorial": "always",
+        "tutorial": "once",
         "uploadEnabled": true,
-        "downloadEnabled": true,
+        "downloadEnabled": false,
         "searchEnabled": true,
         "language": "en",
         "timeDomain": [
@@ -149,6 +149,7 @@
                 "extraDownloadIcon": true,
               {%- endif %}
               // "extraDownloadIcon": true,
+              // "legendUrl": true,
               "useMilliseconds": false,
               "tileSize": 512,
               "discardZulu": true,
@@ -166,38 +167,6 @@
                       "label": "{{layer.title}}",
                       "value": "{{layer.id}}",
                   },
-                  {%- endfor %}
-                  ],
-              },
-              {%- endif %}
-//              {%- if dataset.bands %}
-//              {
-//                  "name": "Band Combination (RGB)",
-//                  "target": "display.extraParameters.dim_bands",
-//                  "selectThree" : true,
-//                  "replace": [{
-//                    "target": "display.extraParameters.LAYERS",
-//                    "value": "{{dataset.id}}"
-//                  }],
-//                  "values":[
-//                  {%- for band in dataset.bands %}
-//                    {"value": "{{band}}"},
-//                  {%- endfor %}
-//                  ],
-//              },
-//              {%- endif %}
-              {%- if dataset.wavelengths %}
-              {
-                  "name": "Wavelength Combination (RGB)",
-                  "target": "display.extraParameters.dim_wavelengths",
-                  "selectThree" : true,
-                  "replace": [{
-                    "target": "display.extraParameters.LAYERS",
-                    "value": "{{dataset.id}}"
-                  }],
-                  "values":[
-                  {%- for wavelength in dataset.wavelengths %}
-                    {"value": "{{wavelength}}"},
                   {%- endfor %}
                   ],
               },

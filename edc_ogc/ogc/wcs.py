@@ -55,6 +55,8 @@ def dispatch_wcs(ows_decoder, request, ows_url, config_client):
             return dispatch_wcs_describe_eo_coverage_set(request, config_client)
         elif ows_request == 'GETCOVERAGE':
             return dispatch_wcs_get_coverage(request, config_client)
+        elif ows_request == 'GETREPORT':
+            return dispatch_wcs_get_report(request, config_client)
         else:
             raise Exception(f"Request '{ows_request}' is not supported.")
 
@@ -330,6 +332,16 @@ def dispatch_wcs_describe_eo_coverage_set(request, config_client):
             dataset_series_set, coverages, number_matched=matched
         )
     ), 'application/xml'
+
+
+def dispatch_wcs_get_report(request, config_client):
+    logger.info("Entro in dispatch_wcs_get_report")
+    logger.info("Entro in dispatch_wcs_get_report")
+    logger.info("Entro in dispatch_wcs_get_report")
+    logger.info("Entro in dispatch_wcs_get_report")
+    logger.info("Entro in dispatch_wcs_get_report")
+
+    return [1, 2, 3]
 
 
 def dispatch_wcs_get_coverage(request, config_client):

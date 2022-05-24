@@ -13,7 +13,9 @@ WORKDIR /home/ogc
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV FLASK_APP edc_ogc/app.py
+
 COPY edc_ogc/. edc_ogc/.
 
 ENTRYPOINT []
-CMD ["flask", "run", "--host=0.0.0.0"]
+# CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["sh", "-c", "flask run --host=0.0.0.0 --port $PORT"]
