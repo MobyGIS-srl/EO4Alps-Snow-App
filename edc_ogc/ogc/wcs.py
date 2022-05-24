@@ -5,6 +5,7 @@ import logging
 from django.utils.timezone import utc, make_aware
 from eoxserver.core.decoders import xml, kvp, typelist, lower, enum
 from eoxserver.services.ows.wcs.v20.util import nsmap, SectionsMixIn
+
 from eoxserver.services.ows.wcs.v20.parameters import (
     WCS20CapabilitiesRenderParams
 )
@@ -31,13 +32,17 @@ from edc_ogc.ogc.supported import (
     SUPPORTED_FORMATS, SUPPORTED_CRSS, SUPPORTED_INTERPOLATIONS
 )
 from edc_ogc.mdi import MdiError
-
+from rasterio.io import MemoryFile
+import re
 
 logger = logging.getLogger(__name__)
 
 
 DEFAULT_CRS = 'http://www.opengis.net/def/crs/EPSG/0/4326'
 
+
+def replace_query_param(key, value, query):
+    return re.sub(f'(?<={key}=)(.*?)(?=&)', value, query)
 
 def dispatch_wcs(ows_decoder, request, ows_url, config_client):
     ows_request = ows_decoder.request
@@ -336,12 +341,29 @@ def dispatch_wcs_describe_eo_coverage_set(request, config_client):
 
 def dispatch_wcs_get_report(request, config_client):
     logger.info("Entro in dispatch_wcs_get_report")
-    logger.info("Entro in dispatch_wcs_get_report")
-    logger.info("Entro in dispatch_wcs_get_report")
-    logger.info("Entro in dispatch_wcs_get_report")
+    snow_byte, frmt = dispatch_wcs_get_coverage(request, config_client)
+
+    request.query = replace_query_param('coverageid', 'DEM__2022-01-01', request.query)
+    request.query = replace_query_param('rangesubset', 'DEM', request.query)
+    dem_byte, _ = dispatch_wcs_get_coverage(request, config_client)
+
+    with MemoryFile(snow_byte) as memfile:
+        with memfile.open() as dataset:
+            snow = dataset.read()[0]
+
+    with MemoryFile(dem_byte) as memfile:
+        with memfile.open() as dataset:
+            dem = dataset.read()[0]
+
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(1, 2);
+    ax[0].imshow(dem);
+    ax[1].imshow(snow, cmap='Blues')
+    plt.show()
+
     logger.info("Entro in dispatch_wcs_get_report")
 
-    return [1, 2, 3]
+    return snow_byte, frmt
 
 
 def dispatch_wcs_get_coverage(request, config_client):

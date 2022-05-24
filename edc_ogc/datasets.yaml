@@ -59,3 +59,12 @@
   timeextent: [2015-06-23, null]
   sample_type: UINT16
 
+- id: DEM
+  '@id': https://services.sentinel-hub.com/configuration/v1/datasets/DEM
+  title: EUDEM
+  bands: [DEM]
+  defaultbands: [DEM]
+  extent: [-10, 30, 20, 60]
+  # TODO: wrong!
+  resolution: [0.0005, 0.0005] # was [1.3474729261651094e-04, 1.3474729261651094e-04]
+  sample_type: FLOAT32
