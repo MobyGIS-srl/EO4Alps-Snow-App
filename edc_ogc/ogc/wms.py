@@ -6,6 +6,7 @@ from eoxserver.core.util.timetools import isoformat
 from eoxserver.services.ows.wms.parsing import parse_bbox, parse_time, int_or_str
 from eoxserver.services.ows.wms.v11.encoders import WMS11Encoder
 from eoxserver.services.ows.wms.v13.encoders import WMS13Encoder
+import requests
 
 from edc_ogc.ogc.supported import (
     SUPPORTED_CRSS, SUPPORTED_FORMATS, EPSG_AXES_REVERSED,
@@ -144,6 +145,25 @@ def dispatch_wms_get_map(config_client, wms_request):
 
     if dataset.get('custom') is not None:
         datasource['type'] = dataset['custom']
+
+    if dataset['id'] != 'S2L2A':
+        base_url = "https://creodias.sentinel-hub.com/ogc/wms/a5ecbf50-44d6-41d7-83ea-efbbd7a03a32"
+        url = base_url + "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true"
+        url += f"&LAYERS={dataset['id']}"
+        tstart = wms_request.time[0].strftime('%FT%T')
+        tend = wms_request.time[1].strftime('%FT%T')
+        url += f"&time={tstart}/{tend}"
+        url += "&WIDTH=512&HEIGHT=512&CRS=EPSG%3A4326"
+        url += f"&BBOX={bbox[1]},{bbox[0]},{bbox[3]},{bbox[2]}"
+
+        payload = {}
+        headers = {
+            'Authorization': 'Bearer https://services.sentinel-hub.com/oauth/token'
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        return response.content, wms_request.format
 
     return mdi_client.process_image(
         sources=[datasource],

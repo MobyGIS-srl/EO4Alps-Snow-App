@@ -34,7 +34,7 @@
 
 - id: S2-SNOW
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
-  title: S2-SNOW
+  title: SATELLITE-SNOW
   custom: byoc-e67c621c-5803-4106-bdcf-2badf883d3b0
   bands: ["s2snow", "dataMask"]
   defaultbands: ['s2snow']
