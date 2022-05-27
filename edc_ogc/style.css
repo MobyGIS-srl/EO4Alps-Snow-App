@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+html,
+body{
+    font-family: 'Rubik', sans-serif;
+    color: rgba(34,34,34,1);
+    font-weight: 400;
+    font-size: 17px;
+}
+
+div.logo_container{width: 200px;}
+div.logo_container img{width: 100%;}
+img{width: 100%;}
+
+hr{
+    background: rgba(31,160,194,1);
+    border: none;
+    width: 50px;
+    height: 3px;
+    margin: 0;
+}
+
+h1, h2, h3,
+h4, h5, h6{
+    color: rgba(34,34,34,1);
+    font-weight: 500;
+    margin-top: 40px;
+}
+
+h1{
+    font-weight: 400;
+    font-size: 38px;
+}
+
+h2{font-size: 28px;}
+h3{font-size: 22px;}
+h4{font-size: 18px;}
+h5{font-size: 16px;}
+h6{font-size: 13px;}
+
+p{line-height: 27px;}
+
+ul{
+    list-style: none; /* Remove default bullets */
+    line-height: 27px;
+}
+
+ul li::before{
+    content: "\2022";  /* Add content: \2022 is the CSS Code/unicode for a bullet */
+    color: rgba(31,160,194,1); /* Change the color */
+    font-weight: bold; /* If you want it to be bold */
+    display: inline-block; /* Needed to add space between the bullet and the text */
+    width: 1em; /* Also needed for space (tweak if needed) */
+    margin-left: -1em; /* Also needed for space (tweak if needed) */
+}
+
+table{
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    margin: 20px 0;
+    width: 100%;
+}
+
+table tr th,
+table tr td{
+    border: 1px solid #ddd;
+    text-align: left;
+    padding: 10px;
+}
+
+table tr th{color:rgba(31,160,194,1);}
+
+div.box{
+    border: 1px solid rgba(31,160,194,1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+div.box div.title{
+    background-color: rgba(31,160,194,1);
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #fff;
+}
+
+div.box.with_padding div.content{padding: 15px 20px;}
+
+div.box.with_padding div.content p{
+    padding: 0px;
+    margin: 0px;
+}
+
+/* ------------------------------------------------- common ------------------------------------------------- */
+
+header{
+    background-color: rgba(31,160,194,1);
+    margin-bottom: 50px;
+    padding: 15px;
+}
+
+header table.layout tr td{
+    text-align: center;
+    overflow: hidden;
+}
+
+header table.layout td div.logo_container{
+    height: 40px;
+    width: auto;
+}
+
+header table.layout td div.logo_container img{
+    height: 100%;
+    width: auto;
+}
+
+footer{
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    margin-top: 30px;
+}
+
+table.layout,
+table.layout tr td{
+    border: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+footer table.layout tr td:last-of-type{text-align: right;}
+
+p.disclaimer{
+    font-size: 12px;
+    color: #888;
+}
+
+

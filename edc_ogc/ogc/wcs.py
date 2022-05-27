@@ -1,3 +1,4 @@
+# from __future__ import absolute_import
 import sys
 from datetime import date, datetime, time, timedelta
 import logging
@@ -42,7 +43,7 @@ DEFAULT_CRS = 'http://www.opengis.net/def/crs/EPSG/0/4326'
 
 
 def replace_query_param(key, value, query):
-    return re.sub(f'(?<={key}=)(.*?)(?=&)', value, query)
+    return re.sub(f'(?<={key}=)(.*?)(?=&|$)', value, query)
 
 def dispatch_wcs(ows_decoder, request, ows_url, config_client):
     ows_request = ows_decoder.request
@@ -355,15 +356,20 @@ def dispatch_wcs_get_report(request, config_client):
         with memfile.open() as dataset:
             dem = dataset.read()[0]
 
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(1, 2);
-    ax[0].imshow(dem);
-    ax[1].imshow(snow, cmap='Blues')
-    plt.show()
-
-    logger.info("Entro in dispatch_wcs_get_report")
-
-    return snow_byte, frmt
+    # import numpy as np
+    # np.save('/home/stw/dem.obj', dem)
+    # np.save('/home/stw/snow.obj', snow)
+    #
+    # import matplotlib.pyplot as plt
+    # fig, ax = plt.subplots(1, 2);
+    # ax[0].imshow(dem);
+    # ax[1].imshow(snow, cmap='Blues')
+    # plt.show()
+    import snow.stats as sst
+    df = sst.compute_snow_stats(dem, snow)
+    pdf_byte = sst.generate_report(df)
+    frmt = 'application/pdf'
+    return pdf_byte, frmt
 
 
 def dispatch_wcs_get_coverage(request, config_client):
