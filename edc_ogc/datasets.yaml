@@ -3,6 +3,8 @@
 - id: SNOW-DEPTH
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
   title: Snowdepth
+  visible: 1
+  extraDownloadIcon: 1
   custom: byoc-98f749a6-38c7-44e6-87d7-abf0d1768697
   bands: ['Snowdepth']
   defaultbands: ['Snowdepth']
@@ -19,6 +21,8 @@
 - id: SWE
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
   title: SWE
+  visible: 0
+  extraDownloadIcon: 1
   custom: byoc-98f749a6-38c7-44e6-87d7-abf0d1768697
   bands: ['SWE']
   defaultbands: ['SWE']
@@ -35,6 +39,8 @@
 - id: S2-SNOW
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
   title: SATELLITE-SNOW
+  visible: 0
+  extraDownloadIcon: 1
   custom: byoc-e67c621c-5803-4106-bdcf-2badf883d3b0
   bands: ["s2snow", "dataMask"]
   defaultbands: ['s2snow']
@@ -51,6 +57,8 @@
 - id: S2L2A
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/S2L2A
   title: Sentinel-2 L2A
+  visible: 0
+  extraDownloadIcon: 0
   bands: [B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B11, B12, SCL, SNW, CLD]
   defaultbands: [B04, B03, B02]
   wavelengths: [442.7, 492.4, 559.8, 664.6, 704.1, 740.5, 782.8, 832.8, 864.7, 945.1, 1613.7, 2202.4]
@@ -62,9 +70,10 @@
 - id: DEM
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/DEM
   title: EUDEM
+  visible: 0
+  extraDownloadIcon: 0
   bands: [DEM]
   defaultbands: [DEM]
   extent: [-10, 30, 20, 60]
-  # TODO: wrong!
   resolution: [0.0005, 0.0005] # was [1.3474729261651094e-04, 1.3474729261651094e-04]
   sample_type: FLOAT32

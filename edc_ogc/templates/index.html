@@ -76,6 +76,16 @@
                 "hidden": true,
             }
         },
+        "downloadProjections": [{
+                  "name": "WGS-84",
+                  "identifier": "EPSG:4326"
+                }, {
+                  "name": "Google Mercator",
+                  "identifier": "EPSG:3857"
+                }, {
+                  "name": "LAEA",
+                  "identifier": "EPSG:3035"
+                }],
     },
     "baseLayers": [
         {
@@ -122,6 +132,7 @@
     ],
     "layers": [
     {%- for dataset, layers in datasets_and_layers %}
+        {%- if dataset.id != 'DEM' %}
         {
           "id": "{{dataset.id}}",
           "displayName": "{{dataset.title}}",
@@ -129,7 +140,7 @@
           "display": {
               //default layer
               "id": "{{dataset.id}}",
-              "visible": false,
+              "visible": {{dataset.visible}},
               "protocol": "WMS",
               "format": "image/png",
               {%- if dataset.timeextent %}
@@ -142,13 +153,7 @@
               "urls": [
                 whereAmI
               ],
-              {%- if dataset.title == 'Sentinel-2 L2A' %}
-                "extraDownloadIcon": false,
-              {%- endif %}
-              {%- if dataset.title != 'Sentinel-2 L2A' %}
-                "extraDownloadIcon": true,
-              {%- endif %}
-              // "extraDownloadIcon": true,
+              "extraDownloadIcon": {{dataset.extraDownloadIcon}},
               // "legendUrl": true,
               "useMilliseconds": false,
               "tileSize": 512,
@@ -206,94 +211,7 @@
               ]
           },
       },
-    {%- endfor %}
-
-    {%- for byod_collection, layers in byod_collections_and_layers %}
-        {
-          "id": "{{byod_collection.id}}",
-          "displayName": "{{byod_collection.name}}",
-          "displayColor": "#56EC00",
-          "display": {
-              //default layer
-              "id": "{{byod_collection.id}}",
-              "visible": false,
-              "protocol": "WMS",
-              "format": "image/png",
-              "projection": "EPSG:4326",
-              "urls": [
-                whereAmI
-              ],
-              "extraDownloadIcon": true,
-              "useMilliseconds": false,
-              "tileSize": 512,
-              "discardZulu": true,
-              "version": "1.3.0",
-              "opacity": 0.9,
-              "minZoom": 4,
-              "options": [
-              {%- if layers %}
-              {
-                  "name": "Predefined display style",
-                  "target": "display.extraParameters.LAYERS",
-                  "values": [
-                  {%- for layer in layers %}
-                  {
-                      "label": "{{layer.title}}",
-                      "value": "{{layer.id}}",
-                  },
-                  {%- endfor %}
-                  ],
-              },
-              {%- endif %}
-              {%- if 'additionalData' in byod_collection and byod_collection.additionalData.bands %}
-              {
-                  "name": "Band Combination (RGB)",
-                  "target": "display.extraParameters.dim_bands",
-                  "selectThree" : true,
-                  "replace": [{
-                    "target": "display.extraParameters.LAYERS",
-                    "value": "{{byod_collection.id}}"
-                  }],
-                  "values":[
-                  {%- for band in byod_collection.additionalData.bands.keys() %}
-                    {"value": "{{band}}"},
-                  {%- endfor %}
-                  ],
-              },
-              {%- endif %}
-            ],
-          },
-          "fullResolution": {
-              "protocol": "WCS",
-              "id": "{{byod_collection.id}}",
-              "url": whereAmI,
-              "maxSizeWarning": 1000000, // total size of product in MB
-              "maxBboxEdgeSize": 0.1,
-              "maxAllowedResolution": 0.002261, // ~250m in degrees on equator
-              "disableTimeSubsetting": true,
-              "axisNames": [
-                  'long',
-                  'lat'
-              ],
-              "fields": [
-              {%- if 'additionalData' in byod_collection and byod_collection.additionalData.bands %}
-              {%- for band in byod_collection.additionalData.bands.keys() %}
-                {"identifier": "{{band}}"},
-              {%- endfor %}
-              {%- endif %}
-              ],
-              "interpolations": [
-                  {
-                    "name": "Bilinear",
-                    "identifier": "http://www.opengis.net/def/interpolation/OGC/1/bilinear"
-                  },
-                  {
-                      "name": "Bicubic",
-                      "identifier": "http://www.opengis.net/def/interpolation/OGC/1/bicubic"
-                  }
-              ]
-          },
-      },
+      {%- endif %}
     {%- endfor %}
     ],
     "overlayLayers": [
