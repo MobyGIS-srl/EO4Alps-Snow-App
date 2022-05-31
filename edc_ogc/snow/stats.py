@@ -4,10 +4,23 @@ import matplotlib.pyplot as plt
 import snow.dem_utils as du
 from moby_report.manager import PdfManager
 from moby_report.element import *
+import xarray as xr
+from xrspatial import aspect, slope, zonal_stats, zonal_crosstab
+
 
 def reclass_aspect(x, n_class=4):
     dg = 360 // n_class
     return ((x + dg/2) // dg) - (x // (360 -dg/2)) * n_class
+
+
+def format_altitude_range(z, dz):
+    z_min = z % 100 * dz
+    return f"{z_min:.0f} - {z_min + dz:.0f}"
+
+
+def format_aspect(a):
+    asp_zones = {0: 'Flat areas', 1: 'North slopes', 2: 'East slopes', 3: 'South slopes', 4: "West slopes"}
+    return asp_zones[a // 100]
 
 
 def compute_snow_stats(dem, snow, dz=500, flat=3):
@@ -19,10 +32,9 @@ def compute_snow_stats(dem, snow, dz=500, flat=3):
     aspect_class = slope_class * (aspect_class + 1)
 
     # TODO: decomment aspect class
-    snow_class = elev_class  # + (aspect_class * 100)
+    snow_class = elev_class + (aspect_class * 100)
 
-    import xarray as xr
-    from xrspatial import aspect, slope, zonal_stats, zonal_crosstab
+
 
     # da_dem = xr.DataArray(dem, dims=['y', 'x'], name='raster')
     # aspect_agg = aspect(da_dem)
@@ -34,7 +46,15 @@ def compute_snow_stats(dem, snow, dz=500, flat=3):
 
     # Calculate Stats with dask backed xarray DataArrays
     stats_df = zonal_stats(zones=zones, values=values, stats_funcs=['mean', 'sum', 'count'])
+    stats_df['aspect'] = stats_df['zone'].apply(format_aspect)
+    stats_df['altitude'] = stats_df['zone'].apply(format_altitude_range, args=[dz])
+
+    stats_df = stats_df[['aspect', 'altitude', 'mean', 'sum', 'count']]
+
     print(stats_df)
+
+    # df_mean = stats_df.set_index(['aspect', 'altitude'])['mean']
+    # df_mean.unstack('aspect')
 
     # crosstab_df = zonal_crosstab(zones, zones2)
     # print(crosstab_df)
