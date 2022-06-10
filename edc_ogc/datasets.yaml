@@ -9,7 +9,7 @@
   bands: ['Snowdepth']
   defaultbands: ['Snowdepth']
   extent: [-10, 30, 20, 60]
-  resolution: [0.0005, 0.0005] # was 1.3474729261651094e-04,
+  resolution: [50, 50]
   timeextent: [2020-10-01, null]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
   sample_type: FLOAT32
@@ -27,7 +27,7 @@
   bands: ['SWE']
   defaultbands: ['SWE']
   extent: [-10, 30, 20, 60]
-  resolution: [0.0005, 0.0005] # [1.3474729261651094e-04, 1.3474729261651094e-04]
+  resolution: [50, 50]
   timeextent: [2020-10-01, null]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
   sample_type: FLOAT32
@@ -45,7 +45,7 @@
   bands: ["s2snow", "dataMask"]
   defaultbands: ['s2snow']
   extent: [-10, 30, 20, 60]
-  resolution: [0.0005, 0.0005] # [1.3474729261651094e-04, 1.3474729261651094e-04]
+  resolution: [100, 100]
   timeextent: [2020-10-01, null]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
   sample_type: UINT8
@@ -63,7 +63,7 @@
   defaultbands: [B04, B03, B02]
   wavelengths: [442.7, 492.4, 559.8, 664.6, 704.1, 740.5, 782.8, 832.8, 864.7, 945.1, 1613.7, 2202.4]
   extent: [-180, -90, 180, 90]
-  resolution: [8.983152841100729e-05, 8.983152841100729e-05]
+  resolution: [50, 50]
   timeextent: [2015-06-23, null]
   sample_type: UINT16
 
@@ -75,5 +75,5 @@
   bands: [DEM]
   defaultbands: [DEM]
   extent: [-10, 30, 20, 60]
-  resolution: [0.0005, 0.0005] # was [1.3474729261651094e-04, 1.3474729261651094e-04]
+  resolution: [50, 50]
   sample_type: FLOAT32

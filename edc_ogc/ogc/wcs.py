@@ -35,15 +35,42 @@ from edc_ogc.ogc.supported import (
 from edc_ogc.mdi import MdiError
 from rasterio.io import MemoryFile
 import re
+import edc_ogc.snow.stats as sst
+from osgeo import ogr
+from osgeo import osr
 
 logger = logging.getLogger(__name__)
 
 
-DEFAULT_CRS = 'http://www.opengis.net/def/crs/EPSG/0/4326'
+DEFAULT_CRS = 'http://www.opengis.net/def/crs/EPSG/0/3035'
 
 
 def replace_query_param(key, value, query):
     return re.sub(f'(?<={key}=)(.*?)(?=&|$)', value, query)
+
+
+def get_query_param(key, query):
+    res = re.findall(f'(?<={key}=)(.*?)(?=&|$)', query)
+    if len(res) == 1:
+        return res[0]
+    return res
+
+
+def reproject_geom(geom, src_epsg, trg_epsg):
+    source = osr.SpatialReference()
+    source.ImportFromEPSG(src_epsg)
+    target = osr.SpatialReference()
+    target.ImportFromEPSG(trg_epsg)
+    transform = osr.CoordinateTransformation(source, target)
+    geom.Transform(transform)
+    return geom
+
+def reproject_bbox(bbox, src_epsg, trg_epsg):
+    p_min = ogr.CreateGeometryFromWkt(f"POINT ({bbox[1]} {bbox[0]})")
+    p_max = ogr.CreateGeometryFromWkt(f"POINT ({bbox[3]} {bbox[2]})")
+    new_p_min = reproject_geom(p_min, src_epsg, trg_epsg)
+    new_p_max = reproject_geom(p_max, src_epsg, trg_epsg)
+    return new_p_min.GetY(), new_p_min.GetX(), new_p_max.GetY(), new_p_max.GetX()
 
 def dispatch_wcs(ows_decoder, request, ows_url, config_client):
     ows_request = ows_decoder.request
@@ -344,6 +371,9 @@ def dispatch_wcs_get_report(request, config_client):
     logger.info("Entro in dispatch_wcs_get_report")
     snow_byte, frmt = dispatch_wcs_get_coverage(request, config_client)
 
+    var = get_query_param('rangesubset', request.query)
+    date = get_query_param('coverageid', request.query).split('__')[-1]
+
     request.query = replace_query_param('coverageid', 'DEM__2022-01-01', request.query)
     request.query = replace_query_param('rangesubset', 'DEM', request.query)
     dem_byte, _ = dispatch_wcs_get_coverage(request, config_client)
@@ -351,23 +381,34 @@ def dispatch_wcs_get_report(request, config_client):
     with MemoryFile(snow_byte) as memfile:
         with memfile.open() as dataset:
             snow = dataset.read()[0]
+            snow_meta = dataset.meta
+            snow_transform = dataset.transform
 
     with MemoryFile(dem_byte) as memfile:
         with memfile.open() as dataset:
             dem = dataset.read()[0]
+            dem_meta = dataset.meta
+            dem_transform = dataset.transform
 
-    # import numpy as np
-    # np.save('/home/stw/dem.obj', dem)
-    # np.save('/home/stw/snow.obj', snow)
-    #
-    # import matplotlib.pyplot as plt
-    # fig, ax = plt.subplots(1, 2);
-    # ax[0].imshow(dem);
-    # ax[1].imshow(snow, cmap='Blues')
-    # plt.show()
-    import snow.stats as sst
-    df = sst.compute_snow_stats(dem, snow)
-    pdf_byte = sst.generate_report(df)
+    img = sst.compose_map(dem, snow, dem_transform, snow_transform)
+    df_mean, df_count = sst.compute_snow_stats(dem, snow)
+
+    # area in square meters
+    cell_area = -snow_transform[0] * snow_transform[4]
+
+    # df_mean [mm], cell_area [m2]
+    mlt = 1e3 if var == 'SWE' else 1e2
+    df_vol = df_mean / mlt * df_count * cell_area
+
+    # NB: compute volume before add tot column
+    tot_vol = df_vol.sum().sum()
+    df_vol['Tot'] = df_vol.sum(axis=1)
+
+    df_mean = df_mean.applymap("{0:.0f}".format)
+    # Volume in Mm3
+    df_vol = (df_vol / 1e6).applymap("{0:.2f}".format)
+
+    pdf_byte = sst.generate_report(var, date, img, df_mean.reset_index(), df_vol.reset_index(), tot_vol)
     frmt = 'application/pdf'
     return pdf_byte, frmt
 
@@ -457,9 +498,13 @@ def dispatch_wcs_get_coverage(request, config_client):
     # TODO: maybe make this optional and also support scalefactor
     width = None
     height = None
-    if crs == DEFAULT_CRS:
-        width = round(abs((bbox[2] - bbox[0]) / coverage.grid.offsets[0]))
-        height = round(abs((bbox[3] - bbox[1]) / coverage.grid.offsets[1]))
+    if crs != DEFAULT_CRS:
+        bbox = reproject_bbox(bbox, code, 3035)
+        crs = DEFAULT_CRS
+
+    width = round(abs((bbox[2] - bbox[0]) / coverage.grid.offsets[0]))
+    height = round(abs((bbox[3] - bbox[1]) / coverage.grid.offsets[1]))
+
 
     for scale in decoder.scalesize:
         if scale.axis in x_axes:
@@ -495,24 +540,6 @@ def dispatch_wcs_get_coverage(request, config_client):
     evalscript, datasource = config_client.get_evalscript_and_defaults(
         dataset_name, None, bands, None, False, visual=False, raw=True
     )
-
-    # evalscript = """//VERSION=3\n\n
-    # function setup() {
-    #   return {
-    #     input: [{
-    #         bands: ["Snowdepth"]
-    #     }],
-    #     output: {
-    #         bands: 1,
-    #         sampleType: SampleType.FLOAT32
-    #     },
-    #   }
-    # }
-    # \n
-    # function evaluatePixel(sample) {
-    #     return [sample.Snowdepth];
-    # }
-    # """
 
     frmt = decoder.format or 'image/tiff'
     if frmt not in SUPPORTED_FORMATS:
