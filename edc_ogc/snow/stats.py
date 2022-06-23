@@ -95,7 +95,7 @@ def generate_report(var, date, img, df_mean, df_vol, tot_vol):
     if var == 'SWE':
         manager.with_element(el.Heading2(f"{var} volume [Mmc]"))
         manager.with_element(el.Table(df_vol))
-        manager.with_element(el.Paragraph(f"The total amount of snow in selected area is: {tot_vol/1000000:.0f} Mmc."))
+        manager.with_element(el.Paragraph(f"The total amount of SWE in selected area is: {tot_vol/1000000:.0f} Mmc."))
     # manager.create_pdf(result_file=f"file.pdf")
 
     manager.with_footer("ESA Contract No. 4000133468/20/I-BG - EO4ALPS REGIONAL INITIATIVE - EXPRO+")
