@@ -9,6 +9,25 @@ import xrspatial as xrs
 from rasterio.plot import show
 import io
 
+swe_levels = [0, 1,  20,  50,  100,  200,  400,  600,  800,  1000,  1200,  1600,  2000,  2500]
+alpha = 0.5
+swe_colors = [
+    (0, 0, 0, 0),
+    (1, 1, 1, alpha/2),
+    (1, 1, 0.68, alpha),
+    (1, 0.87, 0.18, alpha),
+    (0.6, 1, 0.51, alpha),
+    (0.11, 0.83, 0.03, alpha),
+    (0, 1, 1, alpha),
+    (0, 0.47, 1, alpha),
+    (0, 0, 0.59, alpha),
+    (0.5, 0, 0.5, alpha),
+    (0.94, 0, 1, alpha),
+    (1, 0.45, 0, alpha),
+    (0.6, 0.4, 0.2, alpha),
+    (1, 0, 0, alpha)
+]
+
 
 def reclass_aspect(x, n_class=4):
     dg = 360 // n_class
@@ -106,20 +125,17 @@ def generate_report(var, date, img, df_mean, df_vol, tot_vol):
     return manager.get_bytes()
 
 
-def compose_map(dem: np.array, snow: np.array, dtr, str) -> bytes:
-    da_z = xr.DataArray(dem, dims=['y', 'x'], name='Z')
-    da_hillshade = xrs.hillshade(da_z)
+def compose_map(da_dem: xr.DataArray, da_snow: xr.DataArray) -> bytes:
+    da_hillshade = xrs.hillshade(da_dem)
 
     # write rendered plot to memory
     buf = io.BytesIO()
-    # plt.imshow(da_hillshade, cmap='gray');
-    # plt.imshow(test_dem, cmap='terrain', alpha=0.1)
-    # plt.imshow(snow, cmap='Blues', alpha=0.6)
-    # plt.contourf(snow, cmap='Blues', alpha=0.5)
+
     fig, ax = plt.subplots()
-    show(da_hillshade.values, ax=ax, cmap='gray', transform=dtr)
-    show(snow, ax=ax, cmap='viridis', alpha=0.3, transform=str)
-    # plt.contourf(snow, cmap='Blues', alpha=0.5)
+    da_hillshade.plot(ax=ax, cmap='gray', add_colorbar=False)
+    ax.legend().remove()
+    da_snow.plot.contourf(ax=ax, colors=swe_colors, levels=swe_levels)
+    ax.set_title(None)
     plt.savefig(buf, dpi=200.0)
     return buf.getvalue()
 

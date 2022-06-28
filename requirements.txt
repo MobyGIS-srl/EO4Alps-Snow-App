@@ -77,4 +77,5 @@ numba==0.55.2
 xarray==2022.3.0
 xarray-spatial==0.3.3
 rasterio==1.2.10
+rioxarray==0.11.1
 moby-report==0.0.2

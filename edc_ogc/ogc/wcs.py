@@ -6,6 +6,7 @@ import logging
 from django.utils.timezone import utc, make_aware
 from eoxserver.core.decoders import xml, kvp, typelist, lower, enum
 from eoxserver.services.ows.wcs.v20.util import nsmap, SectionsMixIn
+import xarray as xr
 
 from eoxserver.services.ows.wcs.v20.parameters import (
     WCS20CapabilitiesRenderParams
@@ -367,6 +368,13 @@ def dispatch_wcs_describe_eo_coverage_set(request, config_client):
     ), 'application/xml'
 
 
+def _read_in_memory_geotiff(tiff_byte):
+    with MemoryFile(tiff_byte) as memfile:
+        with memfile.open() as data:
+            ds = xr.open_dataset(data, engine='rasterio')
+            return ds.band_data.isel(band=0, drop=True)
+
+
 def dispatch_wcs_get_report(request, config_client):
     logger.info("Entro in dispatch_wcs_get_report")
     snow_byte, frmt = dispatch_wcs_get_coverage(request, config_client)
@@ -378,23 +386,22 @@ def dispatch_wcs_get_report(request, config_client):
     request.query = replace_query_param('rangesubset', 'DEM', request.query)
     dem_byte, _ = dispatch_wcs_get_coverage(request, config_client)
 
-    with MemoryFile(snow_byte) as memfile:
-        with memfile.open() as dataset:
-            snow = dataset.read()[0]
-            snow_meta = dataset.meta
-            snow_transform = dataset.transform
+    da_snow = _read_in_memory_geotiff(snow_byte)
+    da_snow.name = var
+    da_dem = _read_in_memory_geotiff(dem_byte)
+    # with MemoryFile(snow_byte) as memfile:
+    #     with memfile.open() as dataset:
+    #         ds_snow = xr.open_dataset(dataset, engine='rasterio')
+    #         # snow = dataset.read()[0]
+    #         # snow_meta = dataset.meta
+    #         # snow_transform = dataset.transform
 
-    with MemoryFile(dem_byte) as memfile:
-        with memfile.open() as dataset:
-            dem = dataset.read()[0]
-            dem_meta = dataset.meta
-            dem_transform = dataset.transform
-
-    img = sst.compose_map(dem, snow, dem_transform, snow_transform)
-    df_mean, df_count = sst.compute_snow_stats(dem, snow)
+    img = sst.compose_map(da_dem, da_snow)
+    df_mean, df_count = sst.compute_snow_stats(da_dem.values, da_snow.values)
 
     # area in square meters
-    cell_area = -snow_transform[0] * snow_transform[4]
+    xr, yr = da_snow.rio.resolution()
+    cell_area = abs(xr*yr)
 
     # df_mean [mm], cell_area [m2]
     mlt = 1e3 if var == 'SWE' else 1e2
