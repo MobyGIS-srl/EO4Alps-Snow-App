@@ -388,16 +388,17 @@ def dispatch_wcs_get_report(request, config_client):
 
     da_snow = _read_in_memory_geotiff(snow_byte)
     da_snow.name = var
+    # remove negative value after 2D interpolation
+    da_snow = da_snow.where(da_snow > 0, 0)
+
     da_dem = _read_in_memory_geotiff(dem_byte)
-    # with MemoryFile(snow_byte) as memfile:
-    #     with memfile.open() as dataset:
-    #         ds_snow = xr.open_dataset(dataset, engine='rasterio')
-    #         # snow = dataset.read()[0]
-    #         # snow_meta = dataset.meta
-    #         # snow_transform = dataset.transform
+
+    # # snowdepth is in [mm] to [cm]
+    # if var == 'Snowdepth':
+    #     da_snow /= 10
 
     img = sst.compose_map(da_dem, da_snow)
-    df_mean, df_count = sst.compute_snow_stats(da_dem.values, da_snow.values)
+    df_mean, df_count = sst.compute_snow_stats(da_dem, da_snow)
 
     # area in square meters
     xr, yr = da_snow.rio.resolution()
@@ -411,11 +412,19 @@ def dispatch_wcs_get_report(request, config_client):
     tot_vol = df_vol.sum().sum()
     df_vol['Tot'] = df_vol.sum(axis=1)
 
+    df_mean['Mean'] = df_mean.mean(axis=1)
     df_mean = df_mean.applymap("{0:.0f}".format)
     # Volume in Mm3
     df_vol = (df_vol / 1e6).applymap("{0:.2f}".format)
 
-    pdf_byte = sst.generate_report(var, date, img, df_mean.reset_index(), df_vol.reset_index(), tot_vol)
+    df_area = df_count * cell_area
+    df_area = df_area.fillna(0)
+    df_area['Tot'] = df_area.sum(axis=1)
+    df_area = (df_area / 1e6).applymap("{0:.1f}".format)
+
+    bounds = [round(c) for c in da_snow.rio.bounds()]
+    pdf_byte = sst.generate_report(var, date, img, df_mean.reset_index(), df_vol.reset_index(),
+                                   df_area.reset_index(), tot_vol, bounds)
     frmt = 'application/pdf'
     return pdf_byte, frmt
 
