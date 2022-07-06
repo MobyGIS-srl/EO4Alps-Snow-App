@@ -480,6 +480,13 @@ def dispatch_wcs_get_coverage(request, config_client):
 
     bbox = (x_bounds[0], y_bounds[0], x_bounds[1], y_bounds[1])
 
+    delta_x = x_bounds[1] - x_bounds[0]
+    delta_y = y_bounds[1] - y_bounds[0]
+    if delta_x > 0.5:
+        raise Exception(f'Longitude range {delta_x} exceeds 0.5 degrees')
+    if delta_y > 0.5:
+        raise Exception(f'Latitude range {delta_y} exceeds 0.5 degrees')
+
     # TODO: outputcrs not supported?
 
     # rangesubset
