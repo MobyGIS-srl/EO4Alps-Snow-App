@@ -160,20 +160,7 @@
               "opacity": 0.8,
               "minZoom": 4,
               "options": [
-              {%- if layers %}
-              {
-                  "name": "Predefined display style",
-                  "target": "display.extraParameters.LAYERS",
-                  "values": [
-                  {%- for layer in layers %}
-                  {
-                      "label": "{{layer.title}}",
-                      "value": "{{layer.id}}",
-                  },
-                  {%- endfor %}
-                  ],
-              },
-              {%- endif %}
+
             ],
           },
           "fullResolution": {
