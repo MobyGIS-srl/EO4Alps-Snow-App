@@ -17,7 +17,6 @@ ENV LANG=C.UTF-8
 ENV FLASK_APP edc_ogc/app.py
 
 COPY edc_ogc/. edc_ogc/.
-COPY style.css /home/ogc
 
 ENTRYPOINT []
 # CMD ["flask", "run", "--host=0.0.0.0"]

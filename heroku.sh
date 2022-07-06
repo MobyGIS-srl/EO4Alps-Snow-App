@@ -1,9 +1,6 @@
 #!/bin/bash
 
 
-cp ../mundi/dist/code-de.bundle.js edc_ogc/static/
-cp ../mundi/dist/d0866eb6b70f54ef7169.worker.js edc_ogc/static/
-
 heroku container:login
 
 PIP_EXTRA_INDEX_URL=$(grep 'index-url' ~/.config/pip/pip.conf | sed 's/^.*=//' | tr -d ' ')
