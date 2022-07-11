@@ -85,7 +85,7 @@ def compute_snow_stats(dem, snow, dz=500, flat=3):
     return df_mean, df_count
 
 
-def generate_report(var, date, img, df_mean, df_vol, df_area, tot_vol, bounds):
+def generate_report(var, date, img, df_mean, df_vol, df_area, tot_vol, tot_area, bounds):
     manager = PdfManager()
 
     # Header
@@ -133,6 +133,7 @@ def generate_report(var, date, img, df_mean, df_vol, df_area, tot_vol, bounds):
 
     manager.with_element(el.Heading2(f"Area [km²]"))
     manager.with_element(el.Table(df_area))
+    manager.with_element(el.Paragraph(f"Total area: {tot_area / 1e6:.1f} km²."))
 
     manager.with_footer("ESA Contract No. 4000133468/20/I-BG - EO4ALPS REGIONAL INITIATIVE - EXPRO+")
 

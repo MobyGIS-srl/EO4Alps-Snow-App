@@ -420,11 +420,13 @@ def dispatch_wcs_get_report(request, config_client):
     df_area = df_count * cell_area
     df_area = df_area.fillna(0)
     df_area['Tot'] = df_area.sum(axis=1)
+    tot_area = df_area['Tot'].sum()
     df_area = (df_area / 1e6).applymap("{0:.1f}".format)
+
 
     bounds = [round(c) for c in da_snow.rio.bounds()]
     pdf_byte = sst.generate_report(var, date, img, df_mean.reset_index(), df_vol.reset_index(),
-                                   df_area.reset_index(), tot_vol, bounds)
+                                   df_area.reset_index(), tot_vol, tot_area, bounds)
     frmt = 'application/pdf'
     return pdf_byte, frmt
 
