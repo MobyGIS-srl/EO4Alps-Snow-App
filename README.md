@@ -8,13 +8,19 @@ OGC layer including [EOxC browser](https://github.com/eoxc/eoxc) connected to Eu
 ### Setup
 
 ```
-$ git clone https://github.com/eurodatacube/ogc-edc.git
-$ cd ogc-edc
+# install lxml dependeces
+$ sudo apt-get install libxml2-dev libxslt-dev
+
+$ git clone --recurse-submodules https://github.com/MobyGIS-srl/EO4Alps-Snow-App.git
+$ cd EO4Alps-Snow-App
 
 $ export SH_CLIENT_ID=<oauth_clientid>
 $ export SH_CLIENT_SECRET=<oauth_clientsecret>
 $ pip install -r requirements.txt
 $ pip install --global-option=build_ext --global-option="-I/usr/include/gdal" GDAL==`gdal-config --version` 
+
+# fix geos version bug
+$ sed -i "s/geos_version().decode()/geos_version().decode().split(' ')[0]/g" $(find venv -name libgeos.py)
 ```
 
 ### Test

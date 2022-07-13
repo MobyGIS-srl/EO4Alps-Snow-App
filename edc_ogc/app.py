@@ -89,6 +89,8 @@ def get_client(instance_id=None):
         client_id = os.environ.get('SH_CLIENT_ID')
         client_secret = os.environ.get('SH_CLIENT_SECRET')
 
+        logger.warning(f"Client ID: {client_id}")
+
         if instance_id is None:
             config_api = ConfigAPIDefaultLayers(
                 client_id,
@@ -150,7 +152,7 @@ def ows():
         ])
     try:
         client = get_client()
-        request.base_url = "https://www.waterjade.com/eo4alps-snow/browser/a5ecbf50-44d6-41d7-83ea-efbbd7a03a32"
+        # request.base_url = "https://www.waterjade.com/eo4alps-snow/browser/a5ecbf50-44d6-41d7-83ea-efbbd7a03a32"
         ogc_request = OGCRequest(
             base_url=request.base_url,
             method=request.method,
@@ -222,4 +224,4 @@ def ows_instance(instance_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

@@ -1,8 +1,10 @@
 FROM eoxa/eoxserver:latest
 
-RUN apt-get update && apt-get install -y libxml2-dev libxslt-dev python-dev
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libxml2-dev libxslt-dev python-dev wkhtmltopdf
 
 ADD requirements.txt .
+
+ARG PIP_EXTRA_INDEX_URL
 
 RUN pip3 install -r requirements.txt
 
@@ -13,7 +15,9 @@ WORKDIR /home/ogc
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV FLASK_APP edc_ogc/app.py
+
 COPY edc_ogc/. edc_ogc/.
 
 ENTRYPOINT []
-CMD ["flask", "run", "--host=0.0.0.0"]
+# CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["sh", "-c", "flask run --host=0.0.0.0 --port $PORT"]

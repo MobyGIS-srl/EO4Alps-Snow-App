@@ -71,6 +71,8 @@ class OGCClient:
                 raise Exception(f'Version {version} not supported')
 
             return dispatch_wms_get_map(self.config_client, wms_request)
+        if ows_request == 'GETREPORT':
+            pass
 
         raise Exception(f'Unsupported request {ows_request}')
 

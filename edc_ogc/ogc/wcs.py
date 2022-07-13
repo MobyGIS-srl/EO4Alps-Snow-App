@@ -1,3 +1,4 @@
+# from __future__ import absolute_import
 import sys
 from datetime import date, datetime, time, timedelta
 import logging
@@ -5,6 +6,8 @@ import logging
 from django.utils.timezone import utc, make_aware
 from eoxserver.core.decoders import xml, kvp, typelist, lower, enum
 from eoxserver.services.ows.wcs.v20.util import nsmap, SectionsMixIn
+import xarray as xr
+
 from eoxserver.services.ows.wcs.v20.parameters import (
     WCS20CapabilitiesRenderParams
 )
@@ -31,13 +34,44 @@ from edc_ogc.ogc.supported import (
     SUPPORTED_FORMATS, SUPPORTED_CRSS, SUPPORTED_INTERPOLATIONS
 )
 from edc_ogc.mdi import MdiError
-
+from rasterio.io import MemoryFile
+import re
+import edc_ogc.snow.stats as sst
+from osgeo import ogr
+from osgeo import osr
 
 logger = logging.getLogger(__name__)
 
 
-DEFAULT_CRS = 'http://www.opengis.net/def/crs/EPSG/0/4326'
+DEFAULT_CRS = 'http://www.opengis.net/def/crs/EPSG/0/3035'
 
+
+def replace_query_param(key, value, query):
+    return re.sub(f'(?<={key}=)(.*?)(?=&|$)', value, query)
+
+
+def get_query_param(key, query):
+    res = re.findall(f'(?<={key}=)(.*?)(?=&|$)', query)
+    if len(res) == 1:
+        return res[0]
+    return res
+
+
+def reproject_geom(geom, src_epsg, trg_epsg):
+    source = osr.SpatialReference()
+    source.ImportFromEPSG(src_epsg)
+    target = osr.SpatialReference()
+    target.ImportFromEPSG(trg_epsg)
+    transform = osr.CoordinateTransformation(source, target)
+    geom.Transform(transform)
+    return geom
+
+def reproject_bbox(bbox, src_epsg, trg_epsg):
+    p_min = ogr.CreateGeometryFromWkt(f"POINT ({bbox[1]} {bbox[0]})")
+    p_max = ogr.CreateGeometryFromWkt(f"POINT ({bbox[3]} {bbox[2]})")
+    new_p_min = reproject_geom(p_min, src_epsg, trg_epsg)
+    new_p_max = reproject_geom(p_max, src_epsg, trg_epsg)
+    return new_p_min.GetY(), new_p_min.GetX(), new_p_max.GetY(), new_p_max.GetX()
 
 def dispatch_wcs(ows_decoder, request, ows_url, config_client):
     ows_request = ows_decoder.request
@@ -55,6 +89,8 @@ def dispatch_wcs(ows_decoder, request, ows_url, config_client):
             return dispatch_wcs_describe_eo_coverage_set(request, config_client)
         elif ows_request == 'GETCOVERAGE':
             return dispatch_wcs_get_coverage(request, config_client)
+        elif ows_request == 'GETREPORT':
+            return dispatch_wcs_get_report(request, config_client)
         else:
             raise Exception(f"Request '{ows_request}' is not supported.")
 
@@ -332,6 +368,69 @@ def dispatch_wcs_describe_eo_coverage_set(request, config_client):
     ), 'application/xml'
 
 
+def _read_in_memory_geotiff(tiff_byte):
+    with MemoryFile(tiff_byte) as memfile:
+        with memfile.open() as data:
+            ds = xr.open_dataset(data, engine='rasterio')
+            return ds.band_data.isel(band=0, drop=True)
+
+
+def dispatch_wcs_get_report(request, config_client):
+    logger.info("Entro in dispatch_wcs_get_report")
+    snow_byte, frmt = dispatch_wcs_get_coverage(request, config_client)
+
+    var = get_query_param('rangesubset', request.query)
+    date = get_query_param('coverageid', request.query).split('__')[-1]
+
+    request.query = replace_query_param('coverageid', 'DEM__2022-01-01', request.query)
+    request.query = replace_query_param('rangesubset', 'DEM', request.query)
+    dem_byte, _ = dispatch_wcs_get_coverage(request, config_client)
+
+    da_snow = _read_in_memory_geotiff(snow_byte)
+    da_snow.name = var
+    # remove negative value after 2D interpolation
+    da_snow = da_snow.where(da_snow > 0, 0)
+
+    da_dem = _read_in_memory_geotiff(dem_byte)
+
+    # # snowdepth is in [mm] to [cm]
+    # if var == 'Snowdepth':
+    #     da_snow /= 10
+
+    img = sst.compose_map(da_dem, da_snow)
+    df_mean, df_count = sst.compute_snow_stats(da_dem, da_snow)
+
+    # area in square meters
+    xr, yr = da_snow.rio.resolution()
+    cell_area = abs(xr*yr)
+
+    # df_mean [mm], cell_area [m2]
+    mlt = 1e3 if var == 'SWE' else 1e2
+    df_vol = df_mean / mlt * df_count * cell_area
+
+    # NB: compute volume before add tot column
+    tot_vol = df_vol.sum().sum()
+    df_vol['Tot'] = df_vol.sum(axis=1)
+
+    df_mean['Mean'] = df_mean.mean(axis=1)
+    df_mean = df_mean.applymap("{0:.0f}".format)
+    # Volume in Mm3
+    df_vol = (df_vol / 1e6).applymap("{0:.2f}".format)
+
+    df_area = df_count * cell_area
+    df_area = df_area.fillna(0)
+    df_area['Tot'] = df_area.sum(axis=1)
+    tot_area = df_area['Tot'].sum()
+    df_area = (df_area / 1e6).applymap("{0:.1f}".format)
+
+
+    bounds = [round(c) for c in da_snow.rio.bounds()]
+    pdf_byte = sst.generate_report(var, date, img, df_mean.reset_index(), df_vol.reset_index(),
+                                   df_area.reset_index(), tot_vol, tot_area, bounds)
+    frmt = 'application/pdf'
+    return pdf_byte, frmt
+
+
 def dispatch_wcs_get_coverage(request, config_client):
     if request.method == 'GET':
         decoder = WCS20GetCoverageKVPDecoder(request.query)
@@ -383,6 +482,13 @@ def dispatch_wcs_get_coverage(request, config_client):
 
     bbox = (x_bounds[0], y_bounds[0], x_bounds[1], y_bounds[1])
 
+    delta_x = x_bounds[1] - x_bounds[0]
+    delta_y = y_bounds[1] - y_bounds[0]
+    if delta_x > 0.5:
+        raise Exception(f'Longitude range {delta_x} exceeds 0.5 degrees')
+    if delta_y > 0.5:
+        raise Exception(f'Latitude range {delta_y} exceeds 0.5 degrees')
+
     # TODO: outputcrs not supported?
 
     # rangesubset
@@ -417,9 +523,13 @@ def dispatch_wcs_get_coverage(request, config_client):
     # TODO: maybe make this optional and also support scalefactor
     width = None
     height = None
-    if crs == DEFAULT_CRS:
-        width = round(abs((bbox[2] - bbox[0]) / coverage.grid.offsets[0]))
-        height = round(abs((bbox[3] - bbox[1]) / coverage.grid.offsets[1]))
+    if crs != DEFAULT_CRS:
+        bbox = reproject_bbox(bbox, code, 3035)
+        crs = DEFAULT_CRS
+
+    width = round(abs((bbox[2] - bbox[0]) / coverage.grid.offsets[0]))
+    height = round(abs((bbox[3] - bbox[1]) / coverage.grid.offsets[1]))
+
 
     for scale in decoder.scalesize:
         if scale.axis in x_axes:
@@ -455,24 +565,6 @@ def dispatch_wcs_get_coverage(request, config_client):
     evalscript, datasource = config_client.get_evalscript_and_defaults(
         dataset_name, None, bands, None, False, visual=False, raw=True
     )
-
-    # evalscript = """//VERSION=3\n\n
-    # function setup() {
-    #   return {
-    #     input: [{
-    #         bands: ["Snowdepth"]
-    #     }],
-    #     output: {
-    #         bands: 1,
-    #         sampleType: SampleType.FLOAT32
-    #     },
-    #   }
-    # }
-    # \n
-    # function evaluatePixel(sample) {
-    #     return [sample.Snowdepth];
-    # }
-    # """
 
     frmt = decoder.format or 'image/tiff'
     if frmt not in SUPPORTED_FORMATS:

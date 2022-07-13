@@ -3,11 +3,14 @@
 - id: SNOW-DEPTH
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
   title: Snowdepth
-  custom: byoc-98f749a6-38c7-44e6-87d7-abf0d1768697
+  visible: 1
+  extraDownloadIcon: 1
+  reportDownloadIcon: 1
+  custom: byoc-41f495b9-c38b-44d6-98d7-8f766e057229
   bands: ['Snowdepth']
   defaultbands: ['Snowdepth']
   extent: [-10, 30, 20, 60]
-  resolution: [0.0005, 0.0005] # was 1.3474729261651094e-04,
+  resolution: [50, 50]
   timeextent: [2020-10-01, null]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
   sample_type: FLOAT32
@@ -19,11 +22,14 @@
 - id: SWE
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
   title: SWE
-  custom: byoc-98f749a6-38c7-44e6-87d7-abf0d1768697
+  visible: 0
+  extraDownloadIcon: 1
+  reportDownloadIcon: 1
+  custom: byoc-41f495b9-c38b-44d6-98d7-8f766e057229
   bands: ['SWE']
   defaultbands: ['SWE']
   extent: [-10, 30, 20, 60]
-  resolution: [0.0005, 0.0005] # [1.3474729261651094e-04, 1.3474729261651094e-04]
+  resolution: [50, 50]
   timeextent: [2020-10-01, null]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
   sample_type: FLOAT32
@@ -35,11 +41,14 @@
 - id: S2-SNOW
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
   title: SATELLITE-SNOW
+  visible: 0
+  extraDownloadIcon: 1
+  reportDownloadIcon: 0
   custom: byoc-e67c621c-5803-4106-bdcf-2badf883d3b0
   bands: ["s2snow", "dataMask"]
   defaultbands: ['s2snow']
   extent: [-10, 30, 20, 60]
-  resolution: [0.0005, 0.0005] # [1.3474729261651094e-04, 1.3474729261651094e-04]
+  resolution: [100, 100]
   timeextent: [2020-10-01, null]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
   sample_type: UINT8
@@ -51,11 +60,24 @@
 - id: S2L2A
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/S2L2A
   title: Sentinel-2 L2A
+  visible: 0
+  extraDownloadIcon: 0
+  reportDownloadIcon: 0
   bands: [B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B11, B12, SCL, SNW, CLD]
   defaultbands: [B04, B03, B02]
   wavelengths: [442.7, 492.4, 559.8, 664.6, 704.1, 740.5, 782.8, 832.8, 864.7, 945.1, 1613.7, 2202.4]
   extent: [-180, -90, 180, 90]
-  resolution: [8.983152841100729e-05, 8.983152841100729e-05]
+  resolution: [50, 50]
   timeextent: [2015-06-23, null]
   sample_type: UINT16
 
+- id: DEM
+  '@id': https://services.sentinel-hub.com/configuration/v1/datasets/DEM
+  title: EUDEM
+  visible: 0
+  extraDownloadIcon: 0
+  bands: [DEM]
+  defaultbands: [DEM]
+  extent: [-10, 30, 20, 60]
+  resolution: [50, 50]
+  sample_type: FLOAT32
