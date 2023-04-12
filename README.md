@@ -1,3 +1,4 @@
+
 # EO4Alps-Snow OGC layer on top of Euro Data Cube
 
 OGC layer including [EOxC browser](https://github.com/eoxc/eoxc) connected to Euro Data Cube's Sentinel-Hub service.
@@ -9,7 +10,7 @@ OGC layer including [EOxC browser](https://github.com/eoxc/eoxc) connected to Eu
 
 ```
 # install lxml dependeces
-$ sudo apt-get install libxml2-dev libxslt-dev
+$ sudo apt-get install libxml2-dev libxslt-dev libgdal-dev
 
 $ git clone --recurse-submodules https://github.com/MobyGIS-srl/EO4Alps-Snow-App.git
 $ cd EO4Alps-Snow-App
