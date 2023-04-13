@@ -3,14 +3,12 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <meta charset="UTF-8">
-  <link rel="icon"
-      type="image/x-icon"
-      href="static/favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="static/favicon.ico" />
   <title>EO4Alps Snow browser</title>
+  <link rel="stylesheet" href="static/e04.css">
 </head>
-<body style="display: flex; flex-direction: column;">
-  <header id="header" style="width: 100%; flex: 0; display:flex; justify-content: space-between; align-items: center; background-color: #17a0c5; color:white; padding: 8px 24px;">
-
+<body>
+  <header id="header">
       <a href="//eurodatacube.com"><img src="static/EuroDataCube_logo.svg" alt="Euro Data Cube logo" style="height:50px;"/></a>
       <h3 style="margin: 0;">
           <img src="static/snow_white.svg" alt="Snow icon" style="height:36px;"/>
@@ -23,7 +21,10 @@
 <!--      <a href="./instances"></a>-->
 <!--      <h4 style="margin: 0;"><a style="color:white;text-decoration: none;" href="./instances">&rarr; SELECT YOUR INSTANCE</a></h3>-->
   </header>
-  <div id="app" style="position:relative; width: 100%; flex: 1; margin: 0; padding:0;"></div>
+  
+  <img id="legend" src="static/legend.png" />
+  
+  <div id="app"></div>
   <script src="static/code-de.bundle.js"></script>
   <script>
   var today = new Date();

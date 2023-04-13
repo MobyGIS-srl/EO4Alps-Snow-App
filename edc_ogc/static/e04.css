@@ -1,0 +1,31 @@
+body {
+    display: flex; 
+    flex-direction: column;
+}
+
+#header {
+    width: 100%; 
+    flex: 0; 
+    display:flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    background-color: #17a0c5; 
+    color:white; 
+    padding: 8px 24px;
+}
+
+#app {
+    position:relative; 
+    width: 100%; 
+    flex: 1; 
+    margin: 0; 
+    padding:0;
+}
+
+#legend {
+    position: absolute; 
+    top: 10%; 
+    right: 2em; 
+    z-index: 10;
+    height: 40%;
+}
