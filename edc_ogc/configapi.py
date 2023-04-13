@@ -24,9 +24,9 @@ class ConfigAPIBase(ApiBase):
 
         datasets_path = datasets_path or join(dirname(__file__), 'datasets.yaml')
         if urlparse(datasets_path).scheme in ('http', 'https'):
-            self.datasets = yaml.load(requests.get(datasets_path).content)
+            self.datasets = yaml.safe_load(requests.get(datasets_path).content)
         else:
-            self.datasets = yaml.load(open(datasets_path))
+            self.datasets = yaml.safe_load(open(datasets_path))
 
         self.api_url = api_url
 
