@@ -1,6 +1,21 @@
-FROM eurodatacube/ogc-edc:test
+FROM eoxa/eoxserver:release-1.1.2
 
-RUN pip3 install pytest
-ADD test /home/ogc/test
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libxml2-dev libxslt-dev libgdal-dev wkhtmltopdf
 
-CMD pytest test/
+ARG PIP_EXTRA_INDEX_URL
+
+RUN mkdir -p /opt/app
+RUN mkdir -p /opt/app/pip_cache
+RUN mkdir -p /opt/app/edc_ogc
+COPY requirements.txt start-server.sh /opt/app/
+
+COPY edc_ogc /opt/app/edc_ogc/
+WORKDIR /opt/app
+
+RUN pip install -r requirements.txt 
+
+# start server
+EXPOSE 8080
+STOPSIGNAL SIGTERM
+CMD ["/opt/app/start-server.sh"]
+

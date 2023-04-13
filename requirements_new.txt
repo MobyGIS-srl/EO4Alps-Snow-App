@@ -1,3 +1,0 @@
-EOxServer
-moby-report==0.0.2
-

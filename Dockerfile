@@ -10,8 +10,6 @@ ARG PORT
 
 RUN pip install -r requirements.txt
 
-RUN sed -i "s/geos_version().decode()/geos_version().decode().split(' ')[0]/g" /usr/local/lib/python3.10/dist-packages/django/contrib/gis/geos/libgeos.py
-
 RUN mkdir -p /opt/app
 COPY edc_ogc /opt/app/edc_ogc
 WORKDIR /opt/app/edc_ogc
