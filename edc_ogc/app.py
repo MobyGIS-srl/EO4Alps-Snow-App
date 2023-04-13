@@ -2,6 +2,14 @@ import os
 import logging
 import logging.config
 
+### django utils six
+import importlib.util
+import sys
+spec = importlib.util.spec_from_file_location("django.utils.six", "django/utils/six.py")
+six = importlib.util.module_from_spec(spec)
+sys.modules["django.utils.six"] = six
+spec.loader.exec_module(six)
+####
 
 from flask import Flask, request, Response, jsonify, send_from_directory, render_template
 import oauthlib.oauth2
