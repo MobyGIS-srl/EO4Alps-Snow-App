@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 
-deactivate
-rm -rf venv/
+source keys # get SH_CLIENT_ID and SH_CLIENT_SECRET from file
 
-pip install virtualenv
+if [ ! -d "venv" ] 
+then
+    echo "create venv" 
+    
+    pip install virtualenv
 
-python -m venv venv/
+    python -m venv venv/
+
+    pip install -r requirements_dev.txt 
+fi
+    
 source venv/bin/activate
-
-pip install -r requirements_dev.txt 
 
 export FLASK_DEBUG=1
 export FLASK_ENV=development 
 
-(cd edc_ogc/ && python -m flask run )
+(cd edc_ogc/ && flask run )

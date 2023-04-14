@@ -9,11 +9,12 @@
 </head>
 <body>
   <header id="header">
-      <a href="//eurodatacube.com"><img src="static/EuroDataCube_logo.svg" alt="Euro Data Cube logo" style="height:50px;"/></a>
+       <!-- <a href="//eurodatacube.com"><img src="static/EuroDataCube_logo.svg" alt="Euro Data Cube logo" style="height:50px;"/></a> -->
       <h3 style="margin: 0;">
           <img src="static/snow_white.svg" alt="Snow icon" style="height:36px;"/>
-          <b><a style="color:white;text-decoration: none;" href="https://www.waterjade.com/eo4alps-snow/" target="_blank">EO4Alps-Snow</a></b>
+          <b><a style="color:white;text-decoration: none;" href="https://www.waterjade.com/eo4alps-snow/" target="_blank">jSNOW by waterjade®</a></b>
       </h3>
+        <!--
       <a href="https://www.esa.int"><img src="static/esalogo_white.svg" alt="European Space Agency logo" style="height:48px;"/></a>
       <a href="https://www.waterjade.com/en/mobygis-en"><img src="static/mobygis_white.svg" alt="MobyGIS logo" style="height:50px;"/></a>
       <a href="https://www.sinergise.com"><img src="static/SinergiseLogo_white.svg" alt="Sinergise logo" style="height:48px;"/></a>
@@ -22,10 +23,14 @@
 <!--      <h4 style="margin: 0;"><a style="color:white;text-decoration: none;" href="./instances">&rarr; SELECT YOUR INSTANCE</a></h3>-->
   </header>
   
-  <img id="legend" src="static/legend.png" />
+  <img class="legend" id="SNOW-DEPTH-visible-legend" src="static/SNOW-DEPTH-visible-legend.png" />
+  
+  <img class="legend" id="SWE-visible-legend" src="static/SWE-visible-legend.png" style="display: none" />
   
   <div id="app"></div>
+  
   <script src="static/code-de.bundle.js"></script>
+  
   <script>
   var today = new Date();
   today.setUTCHours(24, 0, 0, 0);
@@ -130,7 +135,7 @@
     ],
     "layers": [
     {%- for dataset, layers in datasets_and_layers %}
-        {%- if dataset.id != 'DEM' %}
+        {%- if dataset.id != 'DEM' and dataset.id != 'S2-SNOW' %}
         {
           "id": "{{dataset.id}}",
           "displayName": "{{dataset.title}}",
@@ -250,5 +255,88 @@
     });
     app.start();
   </script>
+  
+  <script>
+      
+      // HORRIBLE CODE to show swe / snowdepth legend, and simulate exclusivness between them 
+      
+function toggleLegend(layer) {
+    
+    var legend = layer.id + "-legend";
+    var el = document.getElementById(legend);
+    
+    if (layer.checked) {
+        el.style.display = 'block';
+    } else {
+        el.style.display = 'none';
+    }    
+    
+    console.log(el);
+}
+
+function disableLayer(layer) {
+    var el = document.getElementById(layer);   
+    el.click();
+}
+
+// if this is checked, and also the other is checked, disable the other
+function checker(layer, other) {   
+    // console.log( layer.checked);
+    if (!layer.checked) return;
+ 
+    var oth_layer = document.getElementById(other);   
+    // console.log( oth_layer.checked);
+    if (!oth_layer.checked) return;
+    
+    //console.log("need to disable " + other);
+    setTimeout(disableLayer, 10, other);
+}
+
+const sd = "SNOW-DEPTH-visible";
+const swe = "SWE-visible";
+      
+function layerChanged() {
+    // console.log(this.id);
+    // console.log(this.checked);
+    
+    if (this.id == sd) {
+        toggleLegend(this);
+        checker(this, swe);
+    } else if (this.id == swe) {
+        toggleLegend(this);
+        checker(this, sd);
+    }       
+        
+}
+      
+function addLayerChange() {      
+    
+    // console.log("addLayerChange");
+      
+    var ele = document.getElementsByClassName('layer-visible');
+    for (var i = 0; i < ele.length; ++i) {
+        var item = ele[i];  
+        
+        // console.log(item);
+
+        item.addEventListener(
+         'change',
+         layerChanged,
+         false
+      );
+    }
+    
+    // hide button filter
+    var ele = document.getElementsByClassName("btn btn-default tool tool-point");
+    for (var i = 0; i < ele.length; ++i) {
+        var item = ele[i];  
+        item.style.display = 'none'; 
+    }
+}
+
+setTimeout(addLayerChange, 1000);
+  
+  </script>
+  
 </body>
 </html>

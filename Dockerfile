@@ -6,7 +6,7 @@ ADD requirements.txt .
 
 ARG PIP_EXTRA_INDEX_URL
 
-ARG PORT
+ARG PORT=8080
 
 RUN pip install -r requirements.txt
 
@@ -15,6 +15,6 @@ COPY edc_ogc /opt/app/edc_ogc
 WORKDIR /opt/app/edc_ogc
 
 ENTRYPOINT []
-EXPOSE 8585
+EXPOSE ${PORT}
 # CMD ["flask", "run", "--host=0.0.0.0"]
-CMD ["sh", "-c", "flask run --host=0.0.0.0 --port 8585"]
+CMD ["sh", "-c", "flask run --host=0.0.0.0 --port ${PORT}"]
