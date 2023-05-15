@@ -147,7 +147,8 @@ def dispatch_wms_get_map(config_client, wms_request):
         datasource['type'] = dataset['custom']
 
     if dataset['id'] != 'S2L2A':
-        base_url = "https://creodias.sentinel-hub.com/ogc/wms/a5ecbf50-44d6-41d7-83ea-efbbd7a03a32"
+        instance_id = os.environ.get('SH_INSTANCE_ID')
+        base_url = "https://creodias.sentinel-hub.com/ogc/wms/" + instance_id
         url = base_url + "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true"
         url += f"&LAYERS={dataset['id']}"
         tstart = wms_request.time[0].strftime('%FT%T')

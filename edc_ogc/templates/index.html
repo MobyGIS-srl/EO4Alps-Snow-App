@@ -12,7 +12,9 @@
        <!-- <a href="//eurodatacube.com"><img src="static/EuroDataCube_logo.svg" alt="Euro Data Cube logo" style="height:50px;"/></a> -->
       <h3 style="margin: 0;">
           <img src="static/snow_white.svg" alt="Snow icon" style="height:36px;"/>
-          <b><a style="color:white;text-decoration: none;" href="https://www.waterjade.com/eo4alps-snow/" target="_blank">jSNOW by waterjade®</a></b>
+          <b><a style="color:white;" href="https://www.waterjade.com/eo4alps-snow/" target="_blank">j-SNOW</a>
+          by 
+          <a style="color:white;" href="https://www.waterjade.com/" target="_blank">waterjade®</a></b>
       </h3>
         <!--
       <a href="https://www.esa.int"><img src="static/esalogo_white.svg" alt="European Space Agency logo" style="height:48px;"/></a>
@@ -23,20 +25,261 @@
 <!--      <h4 style="margin: 0;"><a style="color:white;text-decoration: none;" href="./instances">&rarr; SELECT YOUR INSTANCE</a></h3>-->
   </header>
   
-  <img class="legend" id="SNOW-DEPTH-visible-legend" src="static/SNOW-DEPTH-visible-legend.png" />
+  {%- for dataset, layers in datasets_and_layers %}
   
-  <img class="legend" id="SWE-visible-legend" src="static/SWE-visible-legend.png" style="display: none" />
+      {%- if dataset.legend %}
+      
+        <img class="legend" id="{{ dataset.id }}-visible-legend" src="static/{{ dataset.id }}-visible-legend.png" {%- if not dataset.visible %} style="display: none" {%- endif %} />
+
+      {%- endif %}
+  
+  {%- endfor %}
   
   <div id="app"></div>
   
   <script src="static/code-de.bundle.js"></script>
   
+  <script
+  src="https://code.jquery.com/jquery-3.6.4.slim.min.js"
+  integrity="sha256-a2yjHM4jnF9f54xUQakjZGaqYs/V1CYvWpoqZzC2/Bw="
+  crossorigin="anonymous"></script>
+  
+<script>
+      
+      // HORRIBLE CODE to show swe / snowdepth legend, and simulate exclusivness between them 
+      
+var timeLimits = {};
+
+function hideByClass(classes) {
+    var ele = document.getElementsByClassName(classes);
+    for (var i = 0; i < ele.length; ++i) {
+        var item = ele[i];  
+        item.style.display = 'none'; 
+    }
+}
+
+function format_date(t) {
+    m = new Date(t);
+    // console.log(m);
+    var dateString =
+    m.getUTCFullYear() + "-" +
+    ("0" + (m.getUTCMonth()+1)).slice(-2) + "-" +
+    ("0" + m.getUTCDate()).slice(-2);
+
+    return dateString;
+}
+
+      
+function addit_config() {
+    
+    addLayerChange();
+    
+    // hide button filter
+    hideByClass("btn btn-default btn-sm tool tool-show-time")
+    hideByClass("btn btn-default tool tool-point");
+    hideByClass("form-control input-sm datetime end");
+    hideByClass("col-sm-4 control-label");
+    
+    $('#timeSlider').css('z-index', '-1');
+    
+    var ele = document.getElementsByClassName("col-sm-4 control-label");
+    for (var i = 0; i < ele.length; ++i) {
+        var item = ele[i];  
+        item.text = 'Date'; 
+    }
+    
+    
+    // hide timeslider
+    var ele = document.getElementById("timeSlider");    
+    ele.style.display = 'none'; 
+    //console.log(ele);  
+    
+    first_available_date = new Date();
+    
+    // check layer for date    
+    for (let i = 0; i < config.layers.length; i++) {
+        //console.log(config.layers[i]);
+        var addit_data = config.layers[i].addit_data;
+        //console.log(addit_data);
+        if (!addit_data.hasOwnProperty('data'))
+            continue; 
+            
+        var c_id = config.layers[i].display.id;
+        //console.log(addit_data.data.additionalData);
+        
+        timeLimits[c_id] = {
+            'from': Date.parse(addit_data.data.additionalData.fromSensingTime), 
+            'to':  Date.parse(addit_data.data.additionalData.toSensingTime)
+        }
+        
+        if (timeLimits[c_id].to < first_available_date)
+            first_available_date = timeLimits[c_id].to;
+    }    
+    
+    console.log(timeLimits);
+    
+    setTimeout(selectDate, 500, first_available_date);
+}
+
+function selectDate(first_available_date) {
+        
+    //console.log(timeLimits);
+    //first_available_date = new Date(first_available_date.setUTCDate(today.getUTCDate() - 28));
+    // console.log(first_available_date);
+    
+    // go to first date with available data
+    var ele = document.getElementsByClassName("datetime");
+    for (var i = 0; i < ele.length; ++i) {
+        var item = ele[i];  
+        // console.log(first_available_date);
+        item.value = format_date(first_available_date); 
+        // console.log(item);
+        item.dispatchEvent(new Event("dp"));
+        item.click();
+    }
+
+    $('ul.navbar-right li:first-child').each(function( index ) {
+  console.log( index + ": " + $( this ).text() );
+  $( this ).click();
+  
+});
+    
+    $('.datetime').click();
+}
+
+function put_span_child_color(ele, color) {
+        var nodes = ele.childNodes;
+        for(var j=0; j<nodes.length; j++) {
+            if (nodes[j].nodeName.toLowerCase() == 'span') {
+                nodes[j].style.color = color;
+            }
+        }
+    }
+
+// called from code-de.bundle.js
+function dateChanged(date) {
+    var selected = new Date(date);
+    console.log("ciao");
+    // console.log(selected.getTime());
+    // console.log(timeLimits);
+    
+    var dts = Object.keys(timeLimits);
+    
+    for (let i = 0; i < dts.length; i++) {
+        var dt = dts[i];        
+        
+        var ele = document.getElementById("layer-item-" + dt);
+        var layer = document.getElementById(dt + "-visible");
+        
+        // console.log(dt);
+        
+        // console.log(selected > timeLimits[dt].from);
+        // console.log(selected < timeLimits[dt].to);
+        
+        if (selected >= timeLimits[dt].from && selected <= timeLimits[dt].to) {
+            //console.log("into");
+            // remove disable
+            // remove color red
+            put_span_child_color(ele, '');
+            layer.disabled = false;
+            continue;
+        }
+        
+        //console.log("outo");
+        // put color red
+        put_span_child_color(ele, 'red');                
+        // if layer checked, disable it
+        if (layer.checked) layer.click();        
+        // put disable
+        layer.disabled = true;
+    }
+    
+}
+   
+      
+function toggleLegend(layer) {
+        
+    var legend = layer.id + "-legend";
+    var el = document.getElementById(legend);
+    
+    if (el === null) return;
+    
+    if (layer.checked) {
+        el.style.display = 'block';
+    } else {
+        el.style.display = 'none';
+    }    
+    
+    //console.log(el);
+}
+
+function disableLayer(layer) {
+    var el = document.getElementById(layer);   
+    el.click();
+}
+
+const exclus = [{%- for dataset, layers in datasets_and_layers %}{%- if dataset.exclusive %}{% if not loop.first %},{% endif %}"{{dataset.id}}-visible"{%- endif %}{%- endfor %}];
+
+// if this is checked, and also the other is checked, disable the other
+function checker(layer) {   
+    // console.log( layer.checked);
+    if (!layer.checked) return;
+    
+    for (var i = 0; i < exclus.length; ++i) {
+        var other = exclus[i];  
+        if (other == layer.id) continue;
+ 
+        var oth_layer = document.getElementById(other);   
+        //console.log( oth_layer.checked);
+        if (!oth_layer.checked) continue;
+        
+        //console.log("need to disable " + other);
+        setTimeout(disableLayer, 10, other);
+    }
+}
+      
+function layerChanged() {
+    //console.log(this.id);
+    //console.log(this.checked);
+    
+    toggleLegend(this);
+    
+    var idx = String(this.id);
+    //console.log(idx);
+    
+    if (exclus.indexOf(idx) >= 0) {
+        checker(this);
+    }     
+        
+}
+      
+function addLayerChange() {      
+    
+    //console.log("addLayerChange");
+      
+    var ele = document.getElementsByClassName('layer-visible');
+    for (var i = 0; i < ele.length; ++i) {
+        var item = ele[i];  
+        
+        //console.log(item);
+
+        item.addEventListener(
+         'change',
+         layerChanged,
+         false
+      );
+    }
+}
+
+
+  </script>  
+  
   <script>
   var today = new Date();
   today.setUTCHours(24, 0, 0, 0);
-  var twoYearsAgo = new Date(new Date(today).setUTCFullYear(today.getUTCFullYear() - 2));
-  var displayTimeDomainEnd = new Date(new Date(today));
-  var displayTimeDomainStart = new Date(new Date(today).setUTCDate(today.getUTCDate() - 28));
+  
+      var displayTimeDomainEnd = new Date(new Date(today));
+      var displayTimeDomainStart = new Date(new Date(today).setUTCDate(today.getUTCDate() - 28));
   var selectedTimeDomainStart = new Date(new Date(today).setUTCDate(today.getUTCDate() - 7));
   var selectedTimeDomainEnd = new Date(new Date(today).setUTCDate(today.getUTCDate() - 2));
 
@@ -66,7 +309,7 @@
             selectedTimeDomainEnd,
         ],
         "selectableInterval": "P7D",
-        "timeSliderControls": true,
+        "timeSliderControls": false,
         "timeSliderAlternativeBrush": false,
         // just to trigger shared timefilter/timeslider
         "maxMapInterval": "P8D",
@@ -74,8 +317,8 @@
         "rightPanelOpen": false,
         "leftPanelOpen": true,
         "leftPanelTabIndex": 1,
-        "center": [11.1, 46.1],
-        "zoom": 11,
+        "center": [6.8, 45.8],
+        "zoom": 9,
         "maxZoom": 14,
         "filterSettings": {
             "time": {
@@ -135,11 +378,13 @@
     ],
     "layers": [
     {%- for dataset, layers in datasets_and_layers %}
-        {%- if dataset.id != 'DEM' and dataset.id != 'S2-SNOW' %}
+        {%- if dataset.id != 'DEM'  %}
+
         {
           "id": "{{dataset.id}}",
           "displayName": "{{dataset.title}}",
           "displayColor": "#56EC00",
+          "addit_data":  {{dataset.addit_data | safe }},
           "display": {
               //default layer
               "id": "{{dataset.id}}",
@@ -254,89 +499,10 @@
       container: document.getElementById('app'),
     });
     app.start();
+    
+    addit_config();
   </script>
   
-  <script>
-      
-      // HORRIBLE CODE to show swe / snowdepth legend, and simulate exclusivness between them 
-      
-function toggleLegend(layer) {
-    
-    var legend = layer.id + "-legend";
-    var el = document.getElementById(legend);
-    
-    if (layer.checked) {
-        el.style.display = 'block';
-    } else {
-        el.style.display = 'none';
-    }    
-    
-    console.log(el);
-}
 
-function disableLayer(layer) {
-    var el = document.getElementById(layer);   
-    el.click();
-}
-
-// if this is checked, and also the other is checked, disable the other
-function checker(layer, other) {   
-    // console.log( layer.checked);
-    if (!layer.checked) return;
- 
-    var oth_layer = document.getElementById(other);   
-    // console.log( oth_layer.checked);
-    if (!oth_layer.checked) return;
-    
-    //console.log("need to disable " + other);
-    setTimeout(disableLayer, 10, other);
-}
-
-const sd = "SNOW-DEPTH-visible";
-const swe = "SWE-visible";
-      
-function layerChanged() {
-    // console.log(this.id);
-    // console.log(this.checked);
-    
-    if (this.id == sd) {
-        toggleLegend(this);
-        checker(this, swe);
-    } else if (this.id == swe) {
-        toggleLegend(this);
-        checker(this, sd);
-    }       
-        
-}
-      
-function addLayerChange() {      
-    
-    // console.log("addLayerChange");
-      
-    var ele = document.getElementsByClassName('layer-visible');
-    for (var i = 0; i < ele.length; ++i) {
-        var item = ele[i];  
-        
-        // console.log(item);
-
-        item.addEventListener(
-         'change',
-         layerChanged,
-         false
-      );
-    }
-    
-    // hide button filter
-    var ele = document.getElementsByClassName("btn btn-default tool tool-point");
-    for (var i = 0; i < ele.length; ++i) {
-        var item = ele[i];  
-        item.style.display = 'none'; 
-    }
-}
-
-setTimeout(addLayerChange, 1000);
-  
-  </script>
-  
 </body>
 </html>

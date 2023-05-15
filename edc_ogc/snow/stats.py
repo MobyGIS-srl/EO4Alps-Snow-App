@@ -89,14 +89,16 @@ def generate_report(var, date, img, df_mean, df_vol, df_area, tot_vol, tot_area,
     manager = PdfManager()
 
     # Header
-    manager.with_header(header_images=[
-        el.ImageUrl("https://snow-app-gte2s.1faa6041-02f5-4205-ae26-48fc3bc3b966.hub.eox.at/static/esalogo_white.svg"),
-        el.ImageUrl("https://snow-app-gte2s.1faa6041-02f5-4205-ae26-48fc3bc3b966.hub.eox.at/static/mobygis_white.svg"),
-        el.ImageUrl("https://snow-app-gte2s.1faa6041-02f5-4205-ae26-48fc3bc3b966.hub.eox.at/static/SinergiseLogo_white.svg"),
-        el.ImageUrl("https://snow-app-gte2s.1faa6041-02f5-4205-ae26-48fc3bc3b966.hub.eox.at/static/eurac-logo_white.svg"),
-    ])
+    # ~ manager.with_header(header_images=[
+        # ~ el.ImageUrl("https://snow-app-gte2s.1faa6041-02f5-4205-ae26-48fc3bc3b966.hub.eox.at/static/esalogo_white.svg"),
+        # ~ el.ImageUrl("https://snow-app-gte2s.1faa6041-02f5-4205-ae26-48fc3bc3b966.hub.eox.at/static/mobygis_white.svg"),
+        # ~ el.ImageUrl("https://snow-app-gte2s.1faa6041-02f5-4205-ae26-48fc3bc3b966.hub.eox.at/static/SinergiseLogo_white.svg"),
+        # ~ el.ImageUrl("https://snow-app-gte2s.1faa6041-02f5-4205-ae26-48fc3bc3b966.hub.eox.at/static/eurac-logo_white.svg"),
+    # ~ ])
 
-    manager.with_element(el.Heading1(f"EO4Alps - Snow Report"))
+    # manager.with_element(el.Heading1(f"EO4Alps - Snow Report"))
+    
+    manager.with_element(el.Heading1(f"j-SNOW - Snow Report"))
 
     date_box = el.Box(
         [el.Paragraph(date)],
@@ -135,7 +137,8 @@ def generate_report(var, date, img, df_mean, df_vol, df_area, tot_vol, tot_area,
     manager.with_element(el.Table(df_area))
     manager.with_element(el.Paragraph(f"Total area: {tot_area / 1e6:.1f} km²."))
 
-    manager.with_footer("ESA Contract No. 4000133468/20/I-BG - EO4ALPS REGIONAL INITIATIVE - EXPRO+")
+    #manager.with_footer("ESA Contract No. 4000133468/20/I-BG - EO4ALPS REGIONAL INITIATIVE - EXPRO+")
+    #manager.with_footer("")
 
     # "Waterjade by MobyGIS Srl - Viale Dante 300, I - 38057 Pergine Valsugana (TN)<br>" +
     # "Tel. +39 0461 425806 | email: info@waterjade.com<br>" +

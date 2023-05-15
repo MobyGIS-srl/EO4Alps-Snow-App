@@ -2,6 +2,7 @@
 import sys
 from datetime import date, datetime, time, timedelta
 import logging
+from pprint import pprint
 
 from django.utils.timezone import utc, make_aware
 from eoxserver.core.decoders import xml, kvp, typelist, lower, enum
@@ -36,6 +37,7 @@ from edc_ogc.ogc.supported import (
 from edc_ogc.mdi import MdiError
 from rasterio.io import MemoryFile
 import re
+import rioxarray
 import edc_ogc.snow.stats as sst
 from osgeo import ogr
 from osgeo import osr
@@ -371,8 +373,8 @@ def dispatch_wcs_describe_eo_coverage_set(request, config_client):
 def _read_in_memory_geotiff(tiff_byte):
     with MemoryFile(tiff_byte) as memfile:
         with memfile.open() as data:
-            ds = xr.open_dataset(data, engine='rasterio')
-            return ds.band_data.isel(band=0, drop=True)
+            ds = rioxarray.open_rasterio(data)
+            return ds.isel(band=0, drop=True)
 
 
 def dispatch_wcs_get_report(request, config_client):
@@ -437,6 +439,8 @@ def dispatch_wcs_get_coverage(request, config_client):
     else:
         decoder = WCS20GetCoverageXMLDecoder(request.body)
 
+    print(request)
+    pprint(request)
 
     coverage_id = decoder.coverage_id
     dataset_name, _, datestr = coverage_id.partition('__')

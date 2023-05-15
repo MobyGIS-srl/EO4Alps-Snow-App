@@ -1,0 +1,11 @@
+version: '3.3'
+
+services:
+    eo4alps-snow-browser:
+        image: ghcr.io/mobygis-srl/docker-registry/eo4alps-browser:0.1.4
+        ports:
+            - 8585:8585
+        environment:
+            - SH_CLIENT_ID=cd80af3f-f5db-4e99-ac97-d8e5e50e7cc4
+            - SH_CLIENT_SECRET=z4Q_b%kaJ*v0!xeW{^G!zT^|u;x_+PnQkS_,nLbt
+            - SH_INSTANCE_ID=33845851-a935-42f0-8806-55ab136a42be

@@ -9,8 +9,10 @@ then
     pip install virtualenv
 
     python -m venv venv/
+    
+    source venv/bin/activate
 
-    pip install -r requirements_dev.txt 
+    pip install -r requirements.txt 
 fi
     
 source venv/bin/activate

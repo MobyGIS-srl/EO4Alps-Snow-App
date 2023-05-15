@@ -59,6 +59,9 @@ class OGCClient:
     def dispatch_wms(self, ows_decoder, request, ows_url):
         ows_request = ows_decoder.request
         version = ows_decoder.version
+        
+        print("######################àà")
+        print(ows_request)
 
         if ows_request == 'GETCAPABILITIES':
             return dispatch_wms_get_capabilities(self.config_client, ows_url, version)

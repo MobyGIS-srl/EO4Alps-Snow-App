@@ -1,20 +1,27 @@
 FROM eoxa/eoxserver:latest
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libxml2-dev libxslt-dev libgdal-dev wkhtmltopdf
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libxml2-dev libxslt-dev libgdal-dev wkhtmltopdf python3 python-is-python3 
+
+RUN apt-get update && apt-get install -y \
+    binutils \
+    && strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5
 
 ADD requirements.txt .
 
 ARG PIP_EXTRA_INDEX_URL
 
-ARG PORT=8080
-
 RUN pip install -r requirements.txt
 
-RUN mkdir -p /opt/app
-COPY edc_ogc /opt/app/edc_ogc
-WORKDIR /opt/app/edc_ogc
+RUN sed -i "s/geos_version().decode()/geos_version().decode().split(' ')[0]/g" /usr/local/lib/python3.10/dist-packages/django/contrib/gis/geos/libgeos.py
+
+RUN mkdir -p /opt
+
+COPY edc_ogc /opt/edc_ogc
+
+COPY run.sh /opt/edc_ogc
+
+WORKDIR /opt/edc_ogc
 
 ENTRYPOINT []
-EXPOSE ${PORT}
-# CMD ["flask", "run", "--host=0.0.0.0"]
-CMD ["sh", "-c", "flask run --host=0.0.0.0 --port ${PORT}"]
+
+CMD ./run.sh

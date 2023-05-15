@@ -1,6 +1,7 @@
 import os
 import logging
 import logging.config
+import json
 
 ### django utils six
 import importlib.util
@@ -95,7 +96,7 @@ def get_client(instance_id=None):
         layers_path = os.environ.get('LAYERS_PATH')
         dataproducts_path = os.environ.get('DATAPRODUCTS_PATH')
         client_id = os.environ.get('SH_CLIENT_ID')
-        client_secret = os.environ.get('SH_CLIENT_SECRET')
+        client_secret = os.environ.get('SH_CLIENT_SECRET')        
 
         logger.warning(f"Client ID: {client_id}")
 
@@ -148,16 +149,38 @@ def instances_json():
     instances = client.config_client.get_instances()
     return jsonify(instances)
 
+def get_dataset_collection(client, dataset, cache_collect):
+
+    if not 'collection' in dataset:         
+        return {}
+        
+    cod = dataset['collection']
+    if cod in cache_collect:
+        return cache_collect[cod]
+        
+    res = client.config_client._get("https://creodias.sentinel-hub.com/api/v1/byoc/collections/%s" % (cod, ))
+    res = json.dumps(res)
+    cache_collect[cod] = res
+    return res
 
 @app.route('/')
 def ows():
     if not request.query_string.decode('ascii'):
         client = get_client()
         datasets = client.config_client.get_datasets()
-        return render_template('index.html', datasets_and_layers=[
+        res = [
             (dataset, client.config_client.get_layers(dataset))
             for dataset in datasets
-        ])
+        ]
+        
+        cache_collect = {}
+        
+        for dataset in datasets:
+            dataset['addit_data'] = get_dataset_collection(client, dataset, cache_collect)
+
+        #print(datasets)
+
+        return render_template('index.html', datasets_and_layers=res)
     try:
         client = get_client()
         # request.base_url = "https://www.waterjade.com/eo4alps-snow/browser/a5ecbf50-44d6-41d7-83ea-efbbd7a03a32"

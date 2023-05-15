@@ -4,14 +4,16 @@
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
   title: Snowdepth
   visible: 1
+  legend: 1
+  exclusive: 1
   extraDownloadIcon: 1
   reportDownloadIcon: 1
-  custom: byoc-41f495b9-c38b-44d6-98d7-8f766e057229
+  custom: byoc-3ba3c644-27af-4db7-b0ac-774dfde28381
+  collection: 3ba3c644-27af-4db7-b0ac-774dfde28381
   bands: ['Snowdepth']
   defaultbands: ['Snowdepth']
   extent: [-10, 30, 20, 60]
   resolution: [50, 50]
-  timeextent: [2020-10-01, null]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
   sample_type: FLOAT32
   evalscript:
@@ -23,44 +25,66 @@
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
   title: SWE
   visible: 0
+  legend: 1
+  exclusive: 1
   extraDownloadIcon: 1
   reportDownloadIcon: 1
-  custom: byoc-41f495b9-c38b-44d6-98d7-8f766e057229
+  custom: byoc-3ba3c644-27af-4db7-b0ac-774dfde28381
+  collection: 3ba3c644-27af-4db7-b0ac-774dfde28381
   bands: ['SWE']
   defaultbands: ['SWE']
   extent: [-10, 30, 20, 60]
   resolution: [50, 50]
-  timeextent: [2020-10-01, null]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
   sample_type: FLOAT32
   evalscript:
     raw: evalscripts/swe_raw.js
     mask: evalscripts/swe.js
-
-
-- id: S2-SNOW
+  
+- id: HN72
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
-  title: SATELLITE-SNOW
+  title: HN+72h
   visible: 0
+  legend: 1
+  exclusive: 1
   extraDownloadIcon: 1
   reportDownloadIcon: 0
-  custom: byoc-e67c621c-5803-4106-bdcf-2badf883d3b0
-  bands: ["s2snow", "dataMask"]
-  defaultbands: ['s2snow']
+  custom: byoc-112f0e5c-60b8-4bc4-9680-1727c4174905
+  collection: 112f0e5c-60b8-4bc4-9680-1727c4174905
+  bands: ['HN72']
+  defaultbands: ['HN72']
   extent: [-10, 30, 20, 60]
-  resolution: [100, 100]
-  timeextent: [2020-10-01, null]
+  resolution: [50, 50]
   api_endpoint: https://creodias.sentinel-hub.com/api/v1
-  sample_type: UINT8
+  sample_type: FLOAT32
   evalscript:
-    mask: evalscripts/sca.js
-    raw: evalscripts/sca.js
+    raw: evalscripts/hn72_raw.js
 
+- id: MLT72
+  '@id': https://services.sentinel-hub.com/configuration/v1/datasets/CUSTOM
+  title: SnowMelt+72h
+  visible: 0
+  legend: 1
+  exclusive: 1
+  extraDownloadIcon: 1
+  reportDownloadIcon: 0
+  custom: byoc-112f0e5c-60b8-4bc4-9680-1727c4174905
+  collection: 112f0e5c-60b8-4bc4-9680-1727c4174905
+  bands: ['MLT72']
+  defaultbands: ['MLT72']
+  extent: [-10, 30, 20, 60]
+  resolution: [50, 50]
+  api_endpoint: https://creodias.sentinel-hub.com/api/v1
+  sample_type: FLOAT32
+  evalscript:
+    raw: evalscripts/mlt72_raw.js
 
 - id: S2L2A
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/S2L2A
   title: Sentinel-2 L2A
   visible: 0
+  legend: 0
+  exclusive: 0
   extraDownloadIcon: 0
   reportDownloadIcon: 0
   bands: [B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B11, B12, SCL, SNW, CLD]
@@ -68,13 +92,14 @@
   wavelengths: [442.7, 492.4, 559.8, 664.6, 704.1, 740.5, 782.8, 832.8, 864.7, 945.1, 1613.7, 2202.4]
   extent: [-180, -90, 180, 90]
   resolution: [50, 50]
-  timeextent: [2015-06-23, null]
   sample_type: UINT16
 
 - id: DEM
   '@id': https://services.sentinel-hub.com/configuration/v1/datasets/DEM
   title: EUDEM
   visible: 0
+  legend: 0
+  exclusive: 0  
   extraDownloadIcon: 0
   bands: [DEM]
   defaultbands: [DEM]

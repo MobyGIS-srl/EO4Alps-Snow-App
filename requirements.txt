@@ -1,10 +1,12 @@
-moby-report==0.0.2
+EOxServer
+moby-report
 flask
 oauthlib
 requests-oauthlib
-prometheus_flask_exporter
+prometheus-flask-exporter
 xarray
 rasterio
 numba
 scipy
 xarray-spatial
+rioxarray

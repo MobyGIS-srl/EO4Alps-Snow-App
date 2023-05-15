@@ -62,10 +62,11 @@ class ConfigAPIBase(ApiBase):
 
     def get_byod_collections(self):
         url = "https://services.sentinel-hub.com/byoc/collections"
-        return self._get(url)['data']
+        print("ciao")
+        return self._get(url)
 
     def get_byod_collection(self, identifier):
-        byod_collections = self.get_byod_collections()
+        byod_collections = self.get_byod_collections()['data']
         for byod_collection in byod_collections:
             if byod_collection['id'] == identifier:
                 return byod_collection
@@ -381,10 +382,7 @@ class ConfigAPIDefaultLayers(ConfigAPIBase):
             if layer['id'] == name:
                 return layer
 
-        raise Exception(f'No such layer {name}')
-
-    def get_byod_collections(self):
-        return []
+        raise Exception(f'No such layer {name}')      
 
     def get_dataproduct(self, dataset=None, identifier=None, url=None):
         for dataproduct in self.dataproducts:
