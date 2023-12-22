@@ -38,9 +38,11 @@ from edc_ogc.mdi import MdiError
 from rasterio.io import MemoryFile
 import re
 import rioxarray
-import edc_ogc.snow.stats as sst
+
 from osgeo import ogr
 from osgeo import osr
+
+import wj_snow.stats as sst
 
 logger = logging.getLogger(__name__)
 
